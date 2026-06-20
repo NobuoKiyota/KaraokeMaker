@@ -1,19 +1,19 @@
 {
-    "lyric_font_path": "C:\\Windows\\Fonts\\meiryo.ttc",
+    "lyric_font_path": "C:\\Windows\\Fonts\\yugothb.ttc",
     "lyric_idle_color": "#FFFFFF",
     "lyric_idle_outline": "#333333",
-    "lyric_active_color": "#FF8C00",
+    "lyric_active_color": "#ff5500",
     "lyric_active_outline": "#8B0000",
-    "lyric_outline_width": 3,
-    "chord_font_path": "C:\\Windows\\Fonts\\meiryo.ttc",
+    "lyric_outline_width": 6,
+    "chord_font_path": "C:\\Windows\\Fonts\\yugothb.ttc",
     "chord_color": "#00FF7F",
-    "chord_idle_color": "#00FF7F",
-    "chord_active_color": "#FF8C00",
+    "chord_idle_color": "#55aa00",
+    "chord_active_color": "#ff5500",
     "chord_outline": "#000000",
     "chord_outline_width": 3,
-    "ui_font_path": "C:\\Windows\\Fonts\\meiryo.ttc",
+    "ui_font_path": "C:\\Windows\\Fonts\\yugothb.ttc",
     "ui_color": "#E0E0E0",
-    "title_color": "#fcff3a",
+    "title_color": "#aa0000",
     "section_color": "#ff3c49",
     "measure_color": "#E0E0E0",
     "timecode_color": "#E0E0E0",
@@ -29,9 +29,9 @@
     "show_timecode": true,
     "layout": {
         "title": {
-            "size": 84,
-            "x": 0,
-            "y": 30
+            "size": 80,
+            "x": 10,
+            "y": 40
         },
         "bpm": {
             "size": 50,
@@ -59,14 +59,14 @@
             "y": 235
         },
         "timecode": {
-            "size": 50,
-            "x": 200,
-            "y": 85
+            "size": 55,
+            "x": 1350,
+            "y": 238
         },
         "chord1": {
-            "size": 50,
+            "size": 60,
             "x": 0,
-            "y": 50
+            "y": 60
         },
         "lyric1": {
             "size": 90,
@@ -74,9 +74,9 @@
             "y": 540
         },
         "chord2": {
-            "size": 50,
+            "size": 60,
             "x": 0,
-            "y": 65
+            "y": 60
         },
         "lyric2": {
             "size": 90,

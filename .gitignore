@@ -1,0 +1,16 @@
+# Pythonキャッシュ
+**/__pycache__/
+*.pyc
+
+# AIの成果物アーカイブ
+ai_archives/
+
+# 生成される動画・音声ファイル
+Resources/output*.mp4
+Resources/output*.wav
+**/output*.mp4
+**/output*.wav
+
+# OS一時ファイル
+.DS_Store
+Thumbs.db

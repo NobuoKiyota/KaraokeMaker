@@ -7,7 +7,6 @@ class StyleProfile:
     def __init__(self):
         # 歌詞フォント設定
         self.lyric_font_path = "C:\\Windows\\Fonts\\meiryo.ttc"  # メイリオが標準的
-        self.lyric_font_size = 48
         self.lyric_idle_color = "#FFFFFF"       # 待機色 (白)
         self.lyric_idle_outline = "#333333"     # 待機アウトライン (暗いグレー)
         self.lyric_active_color = "#FF8C00"     # 歌唱後色 (ダークオレンジ)
@@ -16,69 +15,80 @@ class StyleProfile:
         
         # コードフォント設定
         self.chord_font_path = "C:\\Windows\\Fonts\\meiryob.ttc" # メイリオ太字
-        self.chord_font_size = 42                # 歌詞の真上表示用に適したサイズ
-        self.chord_color = "#00FF7F"            # コード色 (スプリンググリーン)
+        self.chord_color = "#00FF7F"            # 互換性保持用
+        self.chord_idle_color = "#00FF7F"       # 待機コード色 (初期値は旧 chord_color と同じ)
+        self.chord_active_color = "#FF8C00"     # 活性コード色
         self.chord_outline = "#000000"
         self.chord_outline_width = 3
         
         # その他UIフォント設定
         self.ui_font_path = "C:\\Windows\\Fonts\\meiryo.ttc"
-        self.ui_font_size = 28
         self.ui_color = "#E0E0E0"
+        
+        # 個別フォントカラー設定
+        self.title_color = "#FFFFFF"
+        self.section_color = "#2222FF"
+        self.measure_color = "#E0E0E0"
+        self.timecode_color = "#FF2222"
+        self.metronome_active_color = "#FF3300"
+        self.metronome_inactive_color = "#222222"
+        self.metronome_outline_color = "#FFCC00"
         
         # ガイド表示設定
         self.show_metronome = True
-        self.show_upcoming_chords = False       # 楽譜風アライメント時は無効化
+        self.show_upcoming_chords = False
         self.show_measure_number = True
         self.show_section_name = True
-
-        # === 楽譜風アライメント用追加設定 ===
+        self.show_title_in_video = True
         self.show_score_layout = True
-        self.lyric_y_ratio_1 = 0.50             # 表示ライン①のY座標比率
-        self.lyric_y_ratio_2 = 0.80             # 表示ライン②のY座標比率
-        self.chord_offset_y = 65                # 歌詞の真上コードオフセット (px)
-        self.measure_offset_y = 115             # 歌詞の真上小節オフセット (px)
-        self.measure_font_size = 30             # 小節番号のフォントサイズ
-        self.measure_color = "#00BFFF"          # 小節番号のカラー (ディープスカイブルー)
+        self.show_timecode = True
 
-        # === 新規: 動画内メタデータ・UI個別レイアウト調整パラメータ ===
-        self.show_title_in_video = True         # 動画内タイトル表示
-        self.title_font_size = 44               # タイトルフォントサイズ
-        self.title_color = "#FFFFFF"            # タイトルカラー
-        self.title_margin_x = 60                 # タイトル左余白
-        self.title_margin_y = 50                 # タイトル上余白
-
-        self.bpm_key_font_size = 32             # BPM/Keyフォントサイズ
-        self.bpm_key_color = "#E0E0E0"          # BPM/Keyカラー
-        self.bpm_key_margin_y = 50               # BPM/Key上余白 (右余白はtitle_margin_xと同期)
-        
-        self.section_font_size = 36             # セクションフォントサイズ
-        self.section_margin_x = 60               # セクション左余白
-        self.section_margin_y = 130              # セクション上余白
-
-        self.metronome_margin_x = 220            # メトロノーム右余白
-        self.metronome_margin_y = 130            # メトロノーム上余白
-        self.metronome_dot_size = 14             # メトロノームドット半径
-        self.metronome_dot_spacing = 38          # メトロノームドット間隔
+        # === 新規: 統一されたレイアウト配置パラメータ ===
+        # size: フォントサイズ/ドット径, x: X座標/余白, y: Y座標/高さ% or オフセット
+        self.layout = {
+            "title": {"size": 44, "x": 60, "y": 50},       # 曲名 (左余白X, 上余白Y)
+            "bpm": {"size": 32, "x": 260, "y": 50},        # BPM (右余白X, 上余白Y)
+            "key": {"size": 32, "x": 60, "y": 50},         # KEY (右余白X, 上余白Y)
+            "section": {"size": 36, "x": 60, "y": 130},    # セクション名 (左余白X, 上余白Y)
+            "metronome": {"size": 14, "x": 220, "y": 130},  # メトロノーム (球半径, 右余白X, 上余白Y)
+            "measure": {"size": 28, "x": 220, "y": 170},   # 小節番号 (サイズ, 右余白X, 上余白Y)
+            "timecode": {"size": 28, "x": 220, "y": 210},  # タイムコード (サイズ, 右余白X, 上余白Y)
+            "chord1": {"size": 42, "x": 0, "y": 65},       # コード① (X微調整, 歌詞からの上オフセットY)
+            "lyric1": {"size": 48, "x": 0, "y": 540},      # 歌詞① (X微調整, 開始高さY px)
+            "chord2": {"size": 42, "x": 0, "y": 65},       # コード② (X微調整, 歌詞からの上オフセットY)
+            "lyric2": {"size": 48, "x": 0, "y": 864}       # 歌詞② (X微調整, 開始高さY px)
+        }
 
     def to_dict(self):
-        return self.__dict__.copy()
+        d = self.__dict__.copy()
+        # 必要であればパスや個別カラーなどの基本設定も辞書化される
+        return d
 
     def from_dict(self, d):
         for k, v in d.items():
             if hasattr(self, k):
-                orig_type = type(getattr(self, k))
-                try:
-                    if orig_type == bool:
-                        setattr(self, k, bool(v))
-                    elif orig_type == int:
-                        setattr(self, k, int(v))
-                    elif orig_type == float:
-                        setattr(self, k, float(v))
-                    else:
+                if k == "layout":
+                    # 辞書のネストされた値を安全に復元
+                    for key_name, param_dict in v.items():
+                        if key_name in self.layout:
+                            for param_name, param_val in param_dict.items():
+                                self.layout[key_name][param_name] = param_val
+                else:
+                    orig_type = type(getattr(self, k))
+                    try:
+                        if orig_type == bool:
+                            setattr(self, k, bool(v))
+                        elif orig_type == int:
+                            setattr(self, k, int(v))
+                        elif orig_type == float:
+                            setattr(self, k, float(v))
+                        else:
+                            setattr(self, k, v)
+                    except Exception:
                         setattr(self, k, v)
-                except Exception:
-                    setattr(self, k, v)
+        # 互換性維持: 旧設定の chord_color があれば chord_idle_color に適用
+        if "chord_color" in d and "chord_idle_color" not in d:
+            self.chord_idle_color = d["chord_color"]
 
 class KaraokeRenderer:
     def __init__(self, parser, style=None):
@@ -116,14 +126,15 @@ class KaraokeRenderer:
     def _load_font(self, path, size):
         try:
             if path:
-                return ImageFont.truetype(path, size)
+                # index=0 (通常はレギュラー) を明示指定して、斜字(イタリック)化バグを完全に防止
+                return ImageFont.truetype(path, size, index=0)
         except Exception:
             pass
         return ImageFont.load_default()
 
     def render_frame(self, time_sec, width=1920, height=1080):
         """指定された時間(秒)における1フレームの画像を生成して返す"""
-        # 1. 土台の画像を作成 (RGB)
+        # 1. 土台 of 画像を作成 (RGB)
         img = Image.new("RGB", (width, height), self.parser.metadata.get("bg_color", "#000000"))
         draw = ImageDraw.Draw(img)
         
@@ -159,107 +170,111 @@ class KaraokeRenderer:
 
         # 2. フォントの準備 (解像度に応じてフォントサイズをスケーリング)
         scale_factor = height / 1080.0
-        lyric_font = self._load_font(self.style.lyric_font_path, int(self.style.lyric_font_size * scale_factor))
-        chord_font = self._load_font(self.style.chord_font_path, int(self.style.chord_font_size * scale_factor))
-        ui_font = self._load_font(self.style.ui_font_path, int(self.style.ui_font_size * scale_factor))
-        measure_font = self._load_font(self.style.ui_font_path, int(self.style.measure_font_size * scale_factor))
         
-        # 新パラメータ用の個別フォント準備
-        title_font = self._load_font(self.style.lyric_font_path, int(self.style.title_font_size * scale_factor))
-        bpm_key_font = self._load_font(self.style.ui_font_path, int(self.style.bpm_key_font_size * scale_factor))
-        section_font = self._load_font(self.style.ui_font_path, int(self.style.section_font_size * scale_factor))
+        # 統一レイアウト仕様に基づいてフォントをロード
+        lyric1_font = self._load_font(self.style.lyric_font_path, int(self.style.layout["lyric1"]["size"] * scale_factor))
+        lyric2_font = self._load_font(self.style.lyric_font_path, int(self.style.layout["lyric2"]["size"] * scale_factor))
+        
+        chord1_font = self._load_font(self.style.chord_font_path, int(self.style.layout["chord1"]["size"] * scale_factor))
+        chord2_font = self._load_font(self.style.chord_font_path, int(self.style.layout["chord2"]["size"] * scale_factor))
+        
+        title_font = self._load_font(self.style.lyric_font_path, int(self.style.layout["title"]["size"] * scale_factor))
+        bpm_font = self._load_font(self.style.ui_font_path, int(self.style.layout["bpm"]["size"] * scale_factor))
+        key_font = self._load_font(self.style.ui_font_path, int(self.style.layout["key"]["size"] * scale_factor))
+        section_font = self._load_font(self.style.ui_font_path, int(self.style.layout["section"]["size"] * scale_factor))
+        measure_font = self._load_font(self.style.ui_font_path, int(self.style.layout["measure"]["size"] * scale_factor))
 
         # 3. 画面情報・メタデータの取得
         beat_info = self.parser.get_current_beat_info(time_sec)
         measure = beat_info["measure"]
         beat = beat_info["beat"]
-        beat_ratio = beat_info["beat_ratio"]
         
-        # 4. 曲メタデータ (曲タイトル、BPM、Key) の動画内表示
+        # 4. 曲メタデータ (曲タイトル、BPM、Key) の表示
         if self.style.show_title_in_video:
             # A. 曲タイトル (左上)
-            title_text = f"曲タイトル: {self.parser.metadata.get('title', 'Unknown')}"
-            title_x = int(self.style.title_margin_x * scale_factor)
-            title_y = int(self.style.title_margin_y * scale_factor)
+            title_text = self.parser.metadata.get('title', 'Unknown')
+            title_x = int(self.style.layout["title"]["x"] * scale_factor)
+            title_y = int(self.style.layout["title"]["y"] * scale_factor)
             draw.text((title_x, title_y), title_text, fill=self.style.title_color, font=title_font)
             
-            # B. BPM / Key (右上、見切れ防止のため右揃え anchor="rt" を適用)
-            bpm_key_text = f"BPM: {self.parser.metadata.get('tempo', 120.0)} | Key: {self.parser.metadata.get('key', '--')}"
-            bpm_key_x = width - int(self.style.title_margin_x * scale_factor)
-            bpm_key_y = int(self.style.bpm_key_margin_y * scale_factor)
-            draw.text((bpm_key_x, bpm_key_y), bpm_key_text, fill=self.style.bpm_key_color, font=bpm_key_font, anchor="rt")
+            # B. BPM (右上、右揃え)
+            bpm_text = f"BPM: {self.parser.metadata.get('tempo', 120.0)}"
+            bpm_x = width - int(self.style.layout["bpm"]["x"] * scale_factor)
+            bpm_y = int(self.style.layout["bpm"]["y"] * scale_factor)
+            draw.text((bpm_x, bpm_y), bpm_text, fill=self.style.ui_color, font=bpm_font, anchor="rt")
 
-        # 5. セクション名 (左下/左中央)
+            # C. KEY (右上、右揃え)
+            key_text = f"Key: {self.parser.metadata.get('key', '--')}"
+            key_x = width - int(self.style.layout["key"]["x"] * scale_factor)
+            key_y = int(self.style.layout["key"]["y"] * scale_factor)
+            draw.text((key_x, key_y), key_text, fill=self.style.ui_color, font=key_font, anchor="rt")
+
+        # 5. セクション名 (左中央/左余白)
         if self.style.show_section_name:
             section_name = self.parser.get_active_section(time_sec)
             sec_text = f"Section: {section_name}"
-            sec_x = int(self.style.section_margin_x * scale_factor)
-            sec_y = int(self.style.section_margin_y * scale_factor)
-            draw.text((sec_x, sec_y), sec_text, fill=self.style.ui_color, font=section_font)
-            
-        # 6. 小節番号の右上固定表示 (従来UI)
-        if self.style.show_measure_number:
-            meas_text = f"Bar: {measure}"
-            meas_x = width - int(self.style.title_margin_x * scale_factor)
-            meas_y = int(self.style.section_margin_y * scale_factor)
-            draw.text((meas_x, meas_y), meas_text, fill=self.style.ui_color, font=section_font, anchor="rt")
+            sec_x = int(self.style.layout["section"]["x"] * scale_factor)
+            sec_y = int(self.style.layout["section"]["y"] * scale_factor)
+            draw.text((sec_x, sec_y), sec_text, fill=self.style.section_color, font=section_font)
 
-        # 7. ビジュアル・ビート・インジケーター (メトロノーム)
+        # 6. ビジュアル・ビート・インジケーター (メトロノーム)
         if self.style.show_metronome:
-            metro_y = int(self.style.metronome_margin_y * scale_factor)
-            metro_x_start = width - int(self.style.metronome_margin_x * scale_factor)
-            circle_radius = int(self.style.metronome_dot_size * scale_factor)
-            spacing = int(self.style.metronome_dot_spacing * scale_factor)
+            metro_y = int(self.style.layout["metronome"]["y"] * scale_factor)
+            metro_x_start = width - int(self.style.layout["metronome"]["x"] * scale_factor)
+            circle_radius = int(self.style.layout["metronome"]["size"] * scale_factor)
+            spacing = int(circle_radius * 2.7)
             
             for b in range(1, 5):
                 cx = metro_x_start + (b - 1) * spacing
                 cy = metro_y
                 is_active = (b == beat)
                 if is_active:
-                    draw.ellipse([cx - circle_radius, cy - circle_radius, cx + circle_radius, cy + circle_radius], fill="#FF3300", outline="#FFCC00", width=2)
+                    draw.ellipse([cx - circle_radius, cy - circle_radius, cx + circle_radius, cy + circle_radius], fill=self.style.metronome_active_color, outline=self.style.metronome_outline_color, width=2)
                 else:
-                    draw.ellipse([cx - circle_radius, cy - circle_radius, cx + circle_radius, cy + circle_radius], fill="#222222", outline="#555555", width=1)
+                    draw.ellipse([cx - circle_radius, cy - circle_radius, cx + circle_radius, cy + circle_radius], fill=self.style.metronome_inactive_color, outline="#555555", width=1)
 
-        # 8. コード進行の表示 (show_score_layout が無効の場合のみ、画面中央上部に従来の表示を行う)
-        if not self.style.show_score_layout:
-            active_chord = self.parser.get_active_chord(time_sec)
-            if active_chord:
-                chord_y = int(150 * scale_factor)
-                self._draw_text_with_outline(
-                    draw, active_chord, 
-                    (width // 2, chord_y), 
-                    self.style.chord_color, self.style.chord_outline, 
-                    int(self.style.chord_outline_width * scale_factor), 
-                    chord_font, anchor="mm"
-                )
-                
-                if self.style.show_upcoming_chords:
-                    upcoming = self.parser.get_next_chords(time_sec, count=3)
-                    if upcoming:
-                        guide_y = int(270 * scale_factor)
-                        guide_text = "Next: " + " -> ".join([c["chord"] if c["chord"] else "N.C." for c in upcoming])
-                        draw.text((width // 2, guide_y), guide_text, fill="#AAAAAA", font=ui_font, anchor="mm")
+        # 7. 固定小節番号表示 (独立レイアウト化)
+        if self.style.show_measure_number:
+            meas_text = f"Bar: {measure}"
+            meas_x = width - int(self.style.layout["measure"]["x"] * scale_factor)
+            meas_y = int(self.style.layout["measure"]["y"] * scale_factor)
+            draw.text((meas_x, meas_y), meas_text, fill=self.style.measure_color, font=measure_font, anchor="rt")
 
-        # 9. 歌詞ワイプ描画 (二行表示) および 楽譜アライメント描画
-        line_y_ratios = {1: self.style.lyric_y_ratio_1, 2: self.style.lyric_y_ratio_2}
+        # 8. 歌詞ワイプ描画 (二行表示) および 楽譜アライメント描画
+        line_y_ratios = {1: self.style.layout["lyric1"]["y"], 2: self.style.layout["lyric2"]["y"]}
+        lyric_fonts = {1: lyric1_font, 2: lyric2_font}
+        chord_fonts = {1: chord1_font, 2: chord2_font}
+        chord_offsets = {1: self.style.layout["chord1"]["y"], 2: self.style.layout["chord2"]["y"]}
+        lyric_adjust_xs = {1: self.style.layout["lyric1"]["x"], 2: self.style.layout["lyric2"]["x"]}
+        chord_adjust_xs = {1: self.style.layout["chord1"]["x"], 2: self.style.layout["chord2"]["x"]}
         
         for line_num in [1, 2]:
             phrase = self.parser.get_active_phrase(line_num, time_sec)
             if not phrase:
                 continue
                 
-            y_pos = int(height * line_y_ratios[line_num])
+            y_val = line_y_ratios[line_num]
+            y_pos = int(y_val * scale_factor)
+            
+            l_font = lyric_fonts[line_num]
+            c_font = chord_fonts[line_num]
+            chord_offset = chord_offsets[line_num]
+            
             words = phrase["words"]
             text_str = phrase["text"]
             
+            # すべての単語の歌詞が "none" または空文字（＝歌詞なしコードのみ）か判定
+            is_lyricless = all(w["text"].lower() == "none" or not w["text"] for w in words)
+            
             # テキスト全体の幅を測定し、センタリング時の開始位置を計算
-            total_w = self._get_text_width(draw, text_str, lyric_font)
-            start_x = (width - total_w) // 2
+            total_w = self._get_text_width(draw, text_str, l_font)
+            start_x = (width - total_w) // 2 + int(lyric_adjust_xs[line_num] * scale_factor)
             
             curr_relative_wipe_x = 0
             accumulated_w = 0
             
             word_positions = []
+            phrase_dur = phrase["end_time"] - phrase["start_time"]
             
             for word in words:
                 w_text = word["text"]
@@ -269,8 +284,20 @@ class KaraokeRenderer:
                 w_measure = word.get("measure", 1)
                 w_beat = word.get("beat", 1)
                 
-                word_w = self._get_text_width(draw, w_text, lyric_font)
-                word_left_x = start_x + accumulated_w
+                if is_lyricless:
+                    # 歌詞なしの場合: 画面左右余白15%を除いた領域(中央70%)に、時間比率に応じて配置(重なり防止)
+                    margin_x = int(width * 0.15)
+                    usable_width = width - margin_x * 2
+                    if phrase_dur > 0:
+                        ratio = (w_start - phrase["start_time"]) / phrase_dur
+                    else:
+                        ratio = 0.5
+                    word_w = 0
+                    word_left_x = margin_x + int(ratio * usable_width) + int(lyric_adjust_xs[line_num] * scale_factor)
+                else:
+                    # 歌詞がある場合: 従来通り、センタリングされた歌詞にアライメント
+                    word_w = self._get_text_width(draw, w_text, l_font) if w_text.lower() != "none" else 0
+                    word_left_x = start_x + accumulated_w
                 
                 word_positions.append({
                     "text": w_text,
@@ -281,15 +308,27 @@ class KaraokeRenderer:
                     "beat": w_beat
                 })
                 
-                if time_sec >= w_end:
-                    curr_relative_wipe_x = accumulated_w + word_w
-                elif time_sec >= w_start:
-                    ratio = (time_sec - w_start) / (w_end - w_start)
-                    curr_relative_wipe_x = accumulated_w + int(word_w * ratio)
-                
-                accumulated_w += word_w
+                if not is_lyricless:
+                    if time_sec >= w_end:
+                        curr_relative_wipe_x = accumulated_w + word_w
+                    elif time_sec >= w_start:
+                        ratio = (time_sec - w_start) / (w_end - w_start)
+                        curr_relative_wipe_x = accumulated_w + int(word_w * ratio)
+                    accumulated_w += word_w
 
-            absolute_wipe_x = start_x + curr_relative_wipe_x
+            # ワイプ境界Xの計算
+            if is_lyricless:
+                # 歌詞なしの場合: フレーズ全体の進行度に応じてワイプ境界Xを計算
+                margin_x = int(width * 0.15)
+                usable_width = width - margin_x * 2
+                if phrase_dur > 0:
+                    ratio = (time_sec - phrase["start_time"]) / phrase_dur
+                else:
+                    ratio = 0.0
+                ratio = max(0.0, min(1.0, ratio))
+                absolute_wipe_x = margin_x + int(ratio * usable_width) + int(lyric_adjust_xs[line_num] * scale_factor)
+            else:
+                absolute_wipe_x = start_x + curr_relative_wipe_x
             
             # フレーズ全体の不透明度 (フェードイン・アウト)
             opacity = 255
@@ -302,77 +341,70 @@ class KaraokeRenderer:
             if opacity == 0:
                 continue
 
-            # レンダリング画像への合成
+            # レンダリング画像への合成用レイヤー
             temp_img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
             temp_draw = ImageDraw.Draw(temp_img)
             
-            # 1. 待機文字を全体に描画
-            self._draw_text_with_outline(
-                temp_draw, text_str, (start_x, y_pos),
-                self.style.lyric_idle_color, self.style.lyric_idle_outline,
-                int(self.style.lyric_outline_width * scale_factor),
-                lyric_font
-            )
-            
-            # 2. 歌唱後文字のレイヤーを描画
             active_layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
             active_draw = ImageDraw.Draw(active_layer)
-            self._draw_text_with_outline(
-                active_draw, text_str, (start_x, y_pos),
-                self.style.lyric_active_color, self.style.lyric_active_outline,
-                int(self.style.lyric_outline_width * scale_factor),
-                lyric_font
-            )
+
+            # 歌詞が有効に存在する場合のみ、歌詞を描画
+            if text_str:
+                # 1. 待機文字を描画
+                self._draw_text_with_outline(
+                    temp_draw, text_str, (start_x, y_pos),
+                    self.style.lyric_idle_color, self.style.lyric_idle_outline,
+                    int(self.style.lyric_outline_width * scale_factor),
+                    l_font
+                )
+                
+                # 2. 歌唱後文字を描画
+                self._draw_text_with_outline(
+                    active_draw, text_str, (start_x, y_pos),
+                    self.style.lyric_active_color, self.style.lyric_active_outline,
+                    int(self.style.lyric_outline_width * scale_factor),
+                    l_font
+                )
             
-            # 3. マスク画像の作成 (ワイプXより左側が真っ白、右側が真っ黒のアルファマスク)
+            # 5. 楽譜風アライメント（コード）を描画
+            if self.style.show_score_layout:
+                for idx, w_pos in enumerate(word_positions):
+                    w_left = w_pos["left_x"] + int(chord_adjust_xs[line_num] * scale_factor)
+                    w_chord = w_pos["chord"]
+                    w_text = w_pos["text"]
+                    
+                    if w_chord and w_chord.lower() not in ["none", "null", ""]:
+                        chord_y = y_pos - int(chord_offset * scale_factor)
+                        chord_w = self._get_text_width(draw, w_chord, c_font)
+                        
+                        # 歌詞が "none" の場合は、コードの中央が w_left に合うよう半幅分左に寄せる
+                        draw_x = w_left
+                        if w_text.lower() == "none":
+                            draw_x = w_left - (chord_w // 2)
+                            
+                        # 待機コードを描画
+                        self._draw_text_with_outline(
+                            temp_draw, w_chord, (draw_x, chord_y),
+                            self.style.chord_idle_color, self.style.chord_outline,
+                            int(self.style.chord_outline_width * scale_factor),
+                            c_font
+                        )
+                        # 活性コードを描画
+                        self._draw_text_with_outline(
+                            active_draw, w_chord, (draw_x, chord_y),
+                            self.style.chord_active_color, self.style.chord_outline,
+                            int(self.style.chord_outline_width * scale_factor),
+                            c_font
+                        )
+
+            # マスク画像の作成 (ワイプXより左側が活性、右側が待機)
             mask_img = Image.new("L", (width, height), 0)
             mask_draw = ImageDraw.Draw(mask_img)
             mask_draw.rectangle([0, 0, absolute_wipe_x, height], fill=255)
             
-            # 4. 複合
+            # 複合
             temp_img = Image.composite(active_layer, temp_img, mask_img)
-            
-            # 5. 楽譜風アライメント（コードと小節線）を一時レイヤーに描画して合成
-            if self.style.show_score_layout:
-                for idx, w_pos in enumerate(word_positions):
-                    w_left = w_pos["left_x"]
-                    w_chord = w_pos["chord"]
-                    w_meas = w_pos["measure"]
-                    w_beat = w_pos["beat"]
-                    w_text = w_pos["text"]
-                    
-                    if w_text.lower() == "none":
-                        continue
-
-                    # 5-A. コードの描画 (歌詞の真上)
-                    if w_chord and w_chord.lower() not in ["none", "null", ""]:
-                        chord_y = y_pos - int(self.style.chord_offset_y * scale_factor)
-                        self._draw_text_with_outline(
-                            temp_draw, w_chord, (w_left, chord_y),
-                            self.style.chord_color, self.style.chord_outline,
-                            int(self.style.chord_outline_width * scale_factor),
-                            chord_font
-                        )
-                    
-                    # 5-B. 小節数の描画 (コードのさらに上)
-                    is_new_meas = (idx == 0)
-                    if idx > 0 and word_positions[idx-1]["measure"] != w_meas:
-                        is_new_meas = True
-                        
-                    if is_new_meas or w_beat == 1:
-                        measure_y = y_pos - int(self.style.measure_offset_y * scale_factor)
-                        
-                        meas_str = f"{w_meas}"
-                        if w_beat > 1:
-                            beat_str = f"{int(w_beat)}" if w_beat.is_integer() else f"{w_beat}"
-                            meas_str = f"{w_meas}({beat_str})"
-                            
-                        self._draw_text_with_outline(
-                            temp_draw, meas_str, (w_left, measure_y),
-                            self.style.measure_color, "#000000",
-                            int(1.5 * scale_factor),
-                            measure_font
-                        )
+            temp_draw = ImageDraw.Draw(temp_img)
 
             # フェードイン・アウト用の透明度調整
             if opacity < 255:
@@ -382,13 +414,32 @@ class KaraokeRenderer:
 
             img.paste(temp_img, (0, 0), temp_img)
 
+        # 9. 実時間タイムコード表示 (右上端)
+        if self.style.show_timecode:
+            tc_y = int(self.style.layout["timecode"]["y"] * scale_factor)
+            tc_x = width - int(self.style.layout["timecode"]["x"] * scale_factor)
+            tc_size = int(self.style.layout["timecode"]["size"] * scale_factor)
+            tc_font = self._load_font(self.style.ui_font_path, tc_size)
+            
+            # MM:SS:mm フォーマット (分:秒:10ミリ秒単位2桁)
+            m = int(time_sec // 60)
+            s = int(time_sec % 60)
+            ms = int((time_sec % 1) * 100)
+            tc_text = f"{m:02d}:{s:02d}:{ms:02d}"
+            
+            self._draw_text_with_outline(
+                draw, tc_text, (tc_x, tc_y),
+                self.style.timecode_color, "#000000",
+                int(2 * scale_factor), tc_font, anchor="rt"
+            )
+
         # 10. 小節グリッド・プログレスバー (画面最下部)
         progress_h = int(12 * scale_factor)
         progress_y = height - progress_h
         progress_ratio = min(1.0, time_sec / max(0.1, self.parser.total_duration))
         
         draw.rectangle([0, progress_y, width, height], fill="#222222")
-        draw.rectangle([0, progress_y, int(width * progress_ratio), height], fill=self.style.chord_color)
+        draw.rectangle([0, progress_y, int(width * progress_ratio), height], fill=self.style.chord_idle_color)
         
         return img
 
@@ -421,7 +472,7 @@ if __name__ == "__main__":
     from karaoke_parser import KaraokeParser
     parser = KaraokeParser(r"Z:\KaraokeMaker\Resources\karaokemaker_sample.xlsx")
     renderer = KaraokeRenderer(parser)
-    img = renderer.render_frame(26.0, 1920, 1080)
+    img = renderer.render_frame(17.5, 1920, 1080)
     
     output_dir = r"C:\Users\kiyot\.gemini\antigravity-ide\brain\a688f196-f54c-4842-b9dd-e3ce74c446cb\scratch"
     os.makedirs(output_dir, exist_ok=True)

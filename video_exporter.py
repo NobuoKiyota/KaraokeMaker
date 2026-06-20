@@ -55,6 +55,7 @@ class VideoExporter:
         cmd = [
             ffmpeg_bin,
             "-y",
+            "-loglevel", "error",  # ログ出力をエラーのみに制限してパイプバッファ溢れ（ハングアップ）を防止
             "-f", "rawvideo",
             "-vcodec", "rawvideo",
             "-pix_fmt", "rgb24",
@@ -84,7 +85,7 @@ class VideoExporter:
         process = subprocess.Popen(
             cmd,
             stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,  # stdoutは不要なためDEVNULLにしてバッファ詰まりを防止
             stderr=subprocess.PIPE,
             startupinfo=startupinfo
         )

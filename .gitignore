@@ -4,6 +4,7 @@
 
 # AIの成果物アーカイブ
 ai_archives/
+scratch/
 
 # 生成される動画・音声ファイル
 Resources/output*.mp4

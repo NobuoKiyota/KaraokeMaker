@@ -15,3 +15,19 @@ Resources/output*.wav
 # OS一時ファイル
 .DS_Store
 Thumbs.db
+
+# YouTube自動アップロード用の認証情報 (機密情報のためコミットしない)
+client_secret*.json
+youtube_token.json
+
+# YouTubeアップロード履歴 (個人の利用データのためコミットしない)
+youtube_upload_history.json
+youtube_upload_history.html
+
+# songbook: プログラムだけをGitに入れる。曲の中身・鍵・音源などは songbook/.gitignore で除外
+
+# 公開用パスワード(songbook/publish.py が読む)。Gitに入れない
+pass.txt
+
+# Cloudflareに公開するための鍵(songbook/deploy が読む)。Gitに入れない
+cf_token.txt

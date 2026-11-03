@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>編集者ページ - コード付き歌詞ブック</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="editor">
+<header class="bar-top">
+  <h1>編集者ページ<span class="badge">編集者専用</span></h1>
+  <div class="bar-actions">
+    <span id="status" class="status"></span>
+    <select id="theme" class="theme-select" aria-label="表示モード">
+      <option value="auto">端末に合わせる</option>
+      <option value="light">標準</option>
+      <option value="dark">ダーク</option>
+    </select>
+    <a id="to-wave" href="waveedit.html"><button type="button" class="ghost" title="音源の波形を見ながら、セクションの頭(ループ・ジャンプの位置)を細かく合わせる">波形編集</button></a>
+    <a href="index.html"><button type="button" class="ghost">閲覧画面へ</button></a>
+    <button id="publish" type="button" class="ghost" title="保存した内容を、公開サイトに反映します(全曲)">公開サイトに反映</button>
+    <button id="save" type="button" disabled>保存 (Ctrl+S)</button>
+  </div>
+</header>
+
+<main class="edit-layout">
+  <section class="src-pane">
+    <div class="src-head">
+      <select id="song" autocomplete="off" aria-label="編集する曲"></select>
+    </div>
+
+    <div class="chips" id="chips" aria-label="この曲のコード(押すとカーソル位置に挿入)"></div>
+    <div class="symbols" aria-label="記号の挿入">
+      <span class="lbl">挿入:</span>
+      <button type="button" data-ins="# " title="セクション見出し">#見出し</button>
+      <button type="button" data-ins="{audio: 2mix=}" title="音源(Google Driveのリンク)">♪音源</button>
+      <button type="button" data-ins="|" title="小節線">|</button>
+      <button type="button" data-ins=" / " title="前のコードを続ける">/</button>
+      <button type="button" data-ins=" % " title="前の1小節と同じ">%</button>
+      <button type="button" data-ins=" %% " title="前の2小節と同じ">%%</button>
+      <button type="button" data-ins=" %%%% " title="前の4小節と同じ">%%%%</button>
+      <button type="button" data-ins="|:" title="繰り返し開始">|:</button>
+      <button type="button" data-ins=":|" title="繰り返し終了">:|</button>
+    </div>
+
+    <textarea id="src" spellcheck="false" wrap="off" autocomplete="off" aria-label="曲のテキスト"></textarea>
+
+    <div class="src-notes">
+      <div id="warnings" class="warn"></div>
+      <details id="diff-box"><summary id="diff-sum">歌詞docとの違い</summary><div id="diff-body"></div></details>
+      <details>
+        <summary>書き方</summary>
+<pre>{title: 曲名}  {key: Bm}  {tempo: 190}
+{offset: 0.055}              ← 音源のビートが小節の頭より遅れている秒数(detect_offsets.py が自動で書きます)
+
+# A @0:21                 ← セクション見出し(色はここから決まります)
+                             小数も書けます(@0:49.47)。区間ループとジャンプは、この時刻(と {offset})を使います
+                             見出しの時刻は、Excelの小節の頭にそろえてあります
+                             末尾の @分:秒 は、自動スクロールで、音源のその位置に合わせる時刻
+                             (Excelから自動で付いています。ずれたら書き換えてください)
+@0:23 [Bm]届かない[G]響かない ← 行の頭の @分:秒 は、その行の時刻(自動スクロール・いまの行の色)
+                             Excelから自動で付いています。ずれた行は書き換え、不要なら消してください
+[Bm]届かない[G]響かない      ← 歌詞はそのまま。コードは乗せたい文字の直前に [ ]
+| Bm D | G F#7 | %% | / |  ← コードだけの行は | で小節を区切る
+                             /=前のコードを続ける
+                             %=前の1小節と同じ(・/・)
+                             %%=前の2小節と同じ(・//・)
+                             %%%%=前の4小節と同じ(・////・)
+|: Bm | G :|               ← 繰り返し記号
+{c: ここは語り}             ← 注釈
+{audio: 2mix=https://drive.google.com/file/d/…/view}
+                           ← 音源(▶で再生)。Driveは「リンクを知っている全員が閲覧可」に。
+                             何本でも書けます(例: Vcless=…)</pre>
+        <p class="hint">歌詞を直してもコードは文字についていきます。行を変えたいときは、普通に改行してください。</p>
+      </details>
+      <details>
+        <summary>下書きの作り直し</summary>
+        <p class="hint">xlsx・歌詞docを更新したときに、そこから下書きを作り直します。今の内容は <code>.cho.bak</code> に退避しますが、この曲で直した内容は新しい下書きに置き換わります。</p>
+        <button id="redraft" class="ghost small" type="button">下書きを作り直す</button>
+      </details>
+    </div>
+  </section>
+
+  <section class="preview" aria-label="プレビュー">
+    <div id="sheet" class="sheet"></div>
+  </section>
+</main>
+
+<script src="songs.js"></script>
+<script src="shared.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>

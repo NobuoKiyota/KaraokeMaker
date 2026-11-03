@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>コード付き歌詞ブック</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar-top slim">
+  <div class="bar-actions">
+    <span id="auto-bar" class="auto-bar" hidden>
+      <button id="auto-run" class="icon" type="button" aria-label="テンポで自動スクロール(音源のない曲用)" title="テンポで自動スクロール(音源のない曲用)">⏱</button>
+      <button id="auto-top" class="icon" type="button" aria-label="先頭へ" title="先頭へ">⏮</button>
+    </span>
+    <button id="auto-toggle" class="icon ghost" type="button" aria-pressed="false" aria-label="自動スクロール" title="自動スクロール">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M6.5 10.5 12 16l5.5-5.5M6 21h12"/></svg>
+    </button>
+    <span class="sel-wrap">
+      <button id="size-btn" class="icon ghost" type="button" tabindex="-1" aria-hidden="true">S</button>
+      <select id="size-select" aria-label="表示サイズ">
+        <option value="9">極小</option>
+        <option value="11.5">小</option>
+        <option value="14">標準</option>
+        <option value="17">大</option>
+        <option value="21">特大</option>
+        <option value="27">極大</option>
+      </select>
+    </span>
+    <button id="pls-btn" class="icon ghost" type="button" aria-label="プレイリスト" aria-expanded="false" title="プレイリスト">P</button>
+    <button id="toggle-panel" class="icon ghost" type="button" aria-expanded="false" aria-controls="panel" aria-label="設定" title="設定">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+    </button>
+  </div>
+  <div id="player-top" class="player-top"></div>
+</header>
+
+<div id="pls-pop" class="pls-pop" hidden role="dialog" aria-label="プレイリスト">
+  <div class="pls-pop-head"><b>プレイリスト</b><span id="pls-pop-state"></span><button id="pls-pop-close" type="button" class="ghost small" aria-label="閉じる">✕</button></div>
+  <ol id="pls-pop-list" class="pls-list"></ol>
+  <div class="pls-pop-foot">
+    <button id="pls-pop-play" type="button" class="small">▶ 最初から</button>
+    <button id="pls-pop-end" type="button" class="ghost small">プレイリストを終了</button>
+    <button id="pls-pop-edit" type="button" class="ghost small">編集(⚙)</button>
+  </div>
+</div>
+
+<div id="loop-chip" class="loop-chip" hidden><span id="loop-label"></span><button id="loop-clear" type="button" aria-label="ループを解除">解除 ✕</button></div>
+
+<main class="layout">
+  <aside id="panel" class="panel">
+    <section class="panel-actions">
+      <button id="print" type="button">PDF保存 / 印刷</button>
+      <a id="to-editor" href="editor.html" hidden><button type="button" class="ghost">編集者ページ</button></a>
+    </section>
+
+    <section id="pls-section">
+      <h2>プレイリスト</h2>
+      <div class="pls-top">
+        <button id="pls-play" type="button">▶ 最初から再生</button>
+        <select id="pls-repeat" aria-label="リピート">
+          <option value="off">リピートなし</option>
+          <option value="all">全曲リピート</option>
+          <option value="one">1曲リピート</option>
+        </select>
+      </div>
+      <ol id="pls-list" class="pls-list"></ol>
+      <div class="pls-row">
+        <select id="pls-add" aria-label="曲を追加"></select>
+        <button id="pls-all" type="button" class="ghost small">全曲</button>
+        <button id="pls-clear" type="button" class="ghost small">空にする</button>
+      </div>
+      <div class="pls-row">
+        <input id="pls-name" type="text" placeholder="名前" aria-label="プレイリストの名前" autocomplete="off">
+        <button id="pls-save" type="button" class="ghost small">保存</button>
+      </div>
+      <div class="pls-row">
+        <select id="pls-saved" aria-label="保存したプレイリスト"></select>
+        <button id="pls-load" type="button" class="ghost small">読み込み</button>
+        <button id="pls-del" type="button" class="ghost small">削除</button>
+      </div>
+      <p id="pls-msg" class="hint" role="status"></p>
+    </section>
+
+    <section>
+      <h2>音源</h2>
+      <label class="row">再生する音源(全曲)
+        <select id="trackPref">
+          <option value="2mix">2mix(歌あり)</option>
+          <option value="Vcless">ボーカルなし</option>
+          <option value="Gtrless">ギターなし</option>
+          <option value="Bsless">ベースなし</option>
+          <option value="Drless">ドラムなし</option>
+        </select>
+      </label>
+      <p class="hint">選んだ種類の音源が無い曲は、2mix で再生します。</p>
+    </section>
+
+    <section>
+      <h2>画面</h2>
+      <label class="row">表示モード
+        <select id="theme">
+          <option value="auto">端末に合わせる</option>
+          <option value="light">標準</option>
+          <option value="dark">ダーク</option>
+        </select>
+      </label>
+    </section>
+
+    <section>
+      <h2>コード</h2>
+      <label class="row">表示
+        <select id="chords">
+          <option value="above">歌詞の上</option>
+          <option value="none">歌詞のみ(コードなし)</option>
+        </select>
+      </label>
+      <label class="row">移調
+        <span class="stepper">
+          <button type="button" data-step="-1" aria-label="半音下げる">−</button>
+          <output id="transpose-out">0</output>
+          <button type="button" data-step="1" aria-label="半音上げる">＋</button>
+        </span>
+      </label>
+      <label class="row">♯ / ♭
+        <select id="accidental">
+          <option value="auto">自動</option>
+          <option value="sharp">♯ 優先</option>
+          <option value="flat">♭ 優先</option>
+        </select>
+      </label>
+      <label class="row">コードの色
+        <select id="chordColor">
+          <option value="color">色付き</option>
+          <option value="mono">黒(モノクロ印刷向け)</option>
+        </select>
+      </label>
+      <label class="row">コードの大きさ
+        <input id="chordScale" type="range" min="60" max="120" step="5">
+        <output id="chordScale-out"></output>
+      </label>
+    </section>
+
+    <section>
+      <h2>小節線・折り返し</h2>
+      <label class="check"><input id="barLines" type="checkbox"> 小節線( | と || )を表示</label>
+      <label class="row">コードだけの行の折り返し
+        <select id="maxBars">
+          <option value="auto">自動(スマホは4小節ずつ)</option>
+          <option value="0">そのまま</option>
+          <option value="4">4小節ずつ</option>
+          <option value="2">2小節ずつ</option>
+        </select>
+      </label>
+    </section>
+
+    <section>
+      <h2>セクションの色</h2>
+      <label class="check"><input id="sectionColors" type="checkbox"> セクションを色分けする</label>
+      <div id="color-grid" class="color-grid"></div>
+      <button id="reset-colors" class="ghost small" type="button">色を初期値に戻す</button>
+    </section>
+
+    <section>
+      <h2>文字</h2>
+      <label class="row">歌詞の大きさ
+        <input id="lyricSize" type="range" min="8" max="28" step="0.5">
+        <output id="lyricSize-out"></output>
+      </label>
+      <label class="row">キー・テンポの大きさ
+        <input id="metaSize" type="range" min="60" max="220" step="10">
+        <output id="metaSize-out"></output>
+      </label>
+      <label class="row">行間
+        <input id="lineGap" type="range" min="0" max="16" step="1">
+        <output id="lineGap-out"></output>
+      </label>
+      <label class="row">書体
+        <select id="font">
+          <option value="gothic">ゴシック</option>
+          <option value="mincho">明朝</option>
+        </select>
+      </label>
+    </section>
+
+    <section>
+      <h2>用紙・段組み</h2>
+      <label class="row">用紙
+        <select id="paper">
+          <option value="A4">A4</option>
+          <option value="B5">B5</option>
+          <option value="A5">A5</option>
+        </select>
+      </label>
+      <label class="row">向き
+        <select id="orient">
+          <option value="portrait">縦</option>
+          <option value="landscape">横</option>
+        </select>
+      </label>
+      <label class="row">段組み
+        <select id="columns">
+          <option value="1">1段</option>
+          <option value="2">2段</option>
+          <option value="3">3段</option>
+        </select>
+      </label>
+      <label class="row">余白
+        <input id="margin" type="range" min="5" max="25" step="1">
+        <output id="margin-out"></output>
+      </label>
+    </section>
+
+    <section>
+      <h2>表示する内容</h2>
+      <label class="check"><input id="showMeta" type="checkbox"> キー・テンポ</label>
+      <label class="check"><input id="showSections" type="checkbox"> セクション名([A]・サビなど)</label>
+      <label class="check"><input id="showInst" type="checkbox"> コードだけの行(イントロ・間奏など)</label>
+    </section>
+
+    <section>
+      <h2>自動スクロール</h2>
+      <label class="row">歌詞を遅らせる
+        <input id="autoOffset" type="range" min="-5" max="10" step="0.5">
+        <output id="autoOffset-out"></output>
+      </label>
+      <label class="row">いまの行の色
+        <select id="autoHighlight">
+          <option value="line">行に色をつける</option>
+          <option value="wipe">文字が左から染まる</option>
+          <option value="off">つけない</option>
+        </select>
+      </label>
+      <label class="row">色
+        <input id="autoColor" type="color">
+      </label>
+    </section>
+
+    <section>
+      <h2>区間ループ</h2>
+      <label class="row">方式
+        <select id="loopMode">
+          <option value="normal">通常(音質優先)</option>
+          <option value="precise">高精度(切れ目なし)</option>
+        </select>
+      </label>
+    </section>
+
+    <section>
+      <button id="reset" class="ghost" type="button">設定を初期値に戻す</button>
+    </section>
+  </aside>
+
+  <section class="preview" aria-label="プレビュー">
+    <div id="sheet" class="sheet"></div>
+  </section>
+</main>
+
+<div id="player" class="player" hidden>
+  <div class="pl-main">
+    <button id="pl-prev" type="button" class="ghost" aria-label="前の曲" hidden>⏮</button>
+    <button id="pl-toggle" type="button" aria-label="再生 / 一時停止">▶</button>
+    <button id="pl-next" type="button" class="ghost" aria-label="次の曲" hidden>⏭</button>
+    <div class="pl-info"><strong id="pl-title"></strong><select id="pl-track" aria-label="音源" hidden></select></div>
+    <input id="pl-seek" type="range" min="0" max="1000" value="0" aria-label="再生位置">
+    <span id="pl-time" class="pl-time">0:00 / 0:00</span>
+    <label class="pl-loop"><input id="pl-loop" type="checkbox"> ループ</label>
+    <button id="pl-min" type="button" class="ghost small" aria-label="小さくする / 戻す" title="小さくする / 戻す">▾</button>
+    <button id="pl-close" type="button" class="ghost small" aria-label="再生を止めてプレーヤーを閉じる" title="再生を止めて閉じる">✕</button>
+  </div>
+  <div id="pl-msg" class="pl-msg" hidden></div>
+  <div id="pl-fallback" class="pl-fallback" hidden>
+    <p id="pl-fallback-note" class="hint"></p>
+    <iframe id="pl-frame" allow="autoplay" title="Google Drive プレーヤー"></iframe>
+  </div>
+</div>
+
+<dialog id="print-help">
+  <h2>PDF保存 / 印刷</h2>
+  <ul>
+    <li><b>パソコン:</b> 送信先を「PDFに保存」→ 保存</li>
+    <li><b>Android:</b> 送信先を「PDFに保存」→ 右上のPDFボタン</li>
+    <li><b>iPhone:</b> プレビューを広げる → 共有 → ファイルに保存</li>
+  </ul>
+  <label class="dlg-check"><input id="print-help-skip" type="checkbox"> 次から出さない</label>
+  <div class="dlg-actions">
+    <button id="print-help-cancel" type="button" class="ghost">やめる</button>
+    <button id="print-help-go" type="button">開く</button>
+  </div>
+</dialog>
+
+<style id="page-style"></style>
+<script src="songs.js"></script>
+<script src="shared.js"></script>
+<script src="unlock.js"></script>
+</body>
+</html>

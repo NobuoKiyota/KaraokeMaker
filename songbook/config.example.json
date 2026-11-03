@@ -1,0 +1,16 @@
+{
+  "exclude": [
+    "(曲の一覧から外す曲名)"
+  ],
+  "audio": {
+    "(曲名)": [
+      "2mix=https://drive.google.com/file/d/(ファイルID)/view"
+    ]
+  },
+  "driveApiKey": "(Google Drive APIキー)",
+  "siteUrl": "https://(公開サイトのアドレス)",
+  "cloudflare": {
+    "accountId": "(CloudflareのアカウントID)",
+    "workerName": "(Worker名)"
+  }
+}

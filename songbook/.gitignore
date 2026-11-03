@@ -1,0 +1,22 @@
+# 公開用に作り直せるもの・一時ファイル
+dist/
+web/songs.js
+align_report.txt
+songs/*.bak
+__pycache__/
+*.pyc
+pass.txt
+*.pass
+songs/*.prev
+cf_token.txt
+
+# このリポジトリは公開(public)なので、曲の中身(歌詞・コード)と鍵は入れない
+songs/
+songs_manifest.json
+songs_order.txt
+config.json
+guide/
+# 作業用・自動で作るもの
+.cache/
+.wrangler/
+wrangler.toml

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>波形編集 - コード付き歌詞ブック</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  body.wave { padding: 0 0 40px; }
+  .wave main { max-width: 1280px; margin: 0 auto; padding: 12px 16px; display: grid; gap: 12px; }
+  .wave .bar-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+  .wave .bar-row label { display: inline-flex; gap: 6px; align-items: center; font-size: .9rem; }
+  .wave input[type="number"], .wave input[type="text"] { width: 6.5em; padding: 4px 6px; font: inherit; border: 1px solid var(--ui-line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+  .wave input.t { width: 8em; font-variant-numeric: tabular-nums; }
+  #wf-scroll { position: relative; overflow-x: auto; overflow-y: hidden; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--paper); height: 214px; }
+  #wf-spacer { height: 1px; }
+  #wf { position: sticky; left: 0; top: 0; display: block; width: 100%; height: 210px; cursor: crosshair; touch-action: none; }
+  #seam { width: 100%; max-width: 640px; height: 110px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--paper); }
+  .seam-box { display: grid; gap: 4px; }
+  .seam-info { font-size: .85rem; color: var(--ui-muted); }
+  .seam-info b.ok { color: #16a34a; } .seam-info b.warn { color: #d97706; }
+  table.secs { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  table.secs th, table.secs td { padding: 4px 6px; border-bottom: 1px solid var(--ui-line); text-align: left; white-space: nowrap; }
+  table.secs tr.loop td { background: color-mix(in srgb, var(--ui-accent) 14%, transparent); }
+  table.secs tr.notime td { color: var(--ui-muted); }
+  table.secs button { padding: 3px 8px; min-width: 2.2em; }
+  .hint2 { color: var(--ui-muted); font-size: .85rem; margin: 0; }
+  #msg { font-size: .9rem; min-height: 1.3em; }
+  #msg.dirty { color: #d97706; font-weight: 700; }
+</style>
+</head>
+<body class="wave">
+<header class="bar-top">
+  <h1>波形編集<span class="badge">編集者専用</span></h1>
+  <div class="bar-actions">
+    <span id="msg"></span>
+    <a href="editor.html"><button type="button" class="ghost">テキスト編集へ</button></a>
+    <button id="publish" type="button" class="ghost" title="保存した内容を、公開サイトに反映します(全曲)">公開サイトに反映</button>
+    <button id="undo" type="button" class="ghost" disabled title="元に戻す (Ctrl+Z)">↶ 元に戻す</button>
+    <button id="redo" type="button" class="ghost" disabled title="やり直し (Ctrl+Y)">↷ やり直し</button>
+    <button id="save" type="button" disabled>保存 (Ctrl+S)</button>
+  </div>
+</header>
+
+<main>
+  <section class="bar-row">
+    <label>曲 <select id="song"></select></label>
+    <label>音源 <select id="track"></select></label>
+    <label class="ghost small" style="cursor:pointer;border:1px solid var(--ui-line);border-radius:8px;padding:3px 8px" title="フォルダにあるものとは別の mp3 を、波形編集で使う(公開サイトの音源とは別のファイルでも読めます)">別のmp3を選ぶ<input id="pick" type="file" accept="audio/*,.mp3" hidden></label>
+    <label>テンポ <output id="bpm">-</output></label>
+    <label>ずれ(秒) <input id="offset" type="number" step="0.005" value="0.050"></label>
+    <button id="detect" type="button" class="ghost small" title="音源のビートを測って、ずれを入れます">自動で測る</button>
+    <label>吸着 <select id="snap">
+      <option value="bar">小節の頭</option>
+      <option value="beat">拍</option>
+      <option value="onset">音の立ち上がり</option>
+      <option value="zero">ゼロ交差</option>
+      <option value="none">なし</option>
+    </select></label>
+  </section>
+
+  <section class="bar-row">
+    <button id="play" type="button">▶ 再生</button>
+    <button id="stop" type="button" class="ghost">■ 先頭へ</button>
+    <span id="clock" style="font-variant-numeric:tabular-nums">0:00.000</span>
+    <label><input id="follow" type="checkbox" checked> 再生位置に追従</label>
+    <label title="表の「⏪末尾」で、ループの終わりの何秒前から再生するか(つなぎ目をすぐ確かめる)">末尾確認 <input id="lead" type="number" min="0.5" max="30" step="0.5" value="2.0">秒前</label>
+    <span style="flex:1"></span>
+    <button id="zoom-out" type="button" class="ghost small">拡大 −</button>
+    <button id="zoom-in" type="button" class="ghost small">拡大 ＋</button>
+    <button id="zoom-fit" type="button" class="ghost small">全体</button>
+  </section>
+
+  <section class="bar-row">
+    <b>クオンタイズ</b>
+    <label>単位 <select id="q-unit">
+      <option value="bar">小節の頭</option>
+      <option value="beat">拍</option>
+      <option value="half">半拍</option>
+    </select></label>
+    <label>許容 <input id="q-tol" type="number" min="0" step="10" value="300">ms</label>
+    <button id="q-all" type="button" class="ghost small" title="テンポから出した格子に、全セクションの頭を合わせます">全セクションをそろえる</button>
+    <span style="width:12px"></span>
+    <b>全部を動かす</b>
+    <button id="bar-all-minus" type="button" class="ghost small" title="全セクションの頭を、1小節前へ">−1小節</button>
+    <button id="bar-all-plus" type="button" class="ghost small" title="全セクションの頭を、1小節後ろへ">+1小節</button>
+    <span class="hint2">格子より許容(ms)以上ずれているものは、動かしません。表の「格子とのずれ」で、ずれを見られます。</span>
+  </section>
+
+  <div id="wf-scroll"><div id="wf-spacer"></div><canvas id="wf"></canvas></div>
+  <p class="hint2">波形をクリックで再生位置を動かす。色のついた線(セクションの頭)をドラッグで動かす。Ctrl+ホイールで拡大・縮小、Spaceで再生・停止。</p>
+
+  <section class="seam-box">
+    <b>つなぎ目(ループの終わり → 頭)</b>
+    <canvas id="seam" width="640" height="110"></canvas>
+    <div id="seam-info" class="seam-info">表のセクションの「⟲」を押すと、そのセクションをループして、つなぎ目の波形が出ます。</div>
+  </section>
+
+  <table class="secs">
+    <thead><tr><th></th><th></th><th></th><th>セクション</th><th>位置(音源の秒)</th><th>格子とのずれ</th><th colspan="6">動かす(小節 / ミリ秒)</th><th></th><th></th><th colspan="2">構成</th></tr></thead>
+    <tbody id="secs"></tbody>
+  </table>
+</main>
+
+<script src="songs.js"></script>
+<script src="shared.js"></script>
+<script src="waveedit.js"></script>
+</body>
+</html>
